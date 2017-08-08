@@ -9,6 +9,7 @@ using Dapper;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using TdsHelper.Models;
+using TdsHelper.Services;
 
 namespace TdsHelper
 {
@@ -16,11 +17,22 @@ namespace TdsHelper
     {
         private readonly MssqlConnectOptions _mssqlConnectOptions;
         private readonly PostgresTypeMapper _typeMapper;
+        private readonly DbService _dbService;
 
-        public Application(IOptions<MssqlConnectOptions> mssqlConnectOptions, PostgresTypeMapper typeMapper)
+        public Application(IOptions<MssqlConnectOptions> mssqlConnectOptions, PostgresTypeMapper typeMapper, DbService dbService)
         {
             _mssqlConnectOptions = mssqlConnectOptions.Value;
             _typeMapper = typeMapper;
+            _dbService = dbService;
+        }
+
+        public void Run()
+        {
+            var table = _dbService.GetTable(_mssqlConnectOptions.Table);
+            table.Columns = _dbService.GetTableColumns(_mssqlConnectOptions.Table);
+
+            var sb = new StringBuilder().CreateServerForDb().CreateTableScript(table);
+            var script = sb.ToString();
         }
 
         public static void Init(string[] args)
@@ -41,32 +53,6 @@ namespace TdsHelper
 
         public static IConfigurationRoot Configuration { get; private set; }
 
-        public void Run()
-        {
-            using (IDbConnection conn = DiContainer.Resolve<IDbConnection>())
-            {
-                var columns = conn.Query<Column>(Queries.TableFullSchemaQuery, new { tablename = _mssqlConnectOptions.Table}).ToArray();
-                var table = new Table()
-                {
-                    TableCatalog = columns.First().TableCatalog,
-                    TableSchema = columns.First().TableSchema,
-                    TableName = columns.First().TableName,
-                    Columns = columns
-                };
 
-                var sb = new StringBuilder();
-                sb.AppendLine($"create foreign table {table.TableName}");
-                sb.AppendLine("(");
-
-                foreach (var column in columns)
-                {
-                    sb.AppendLine(_typeMapper.ToPostgresColumnString(column));
-                }
-
-                sb.AppendLine(")");
-                sb.AppendLine($"server {_mssqlConnectOptions.Server}");
-                sb.AppendLine($"options (schema_name '{table.TableSchema}', table_name '{table.TableName}', row_estimate_method 'showplan_all')");
-            }
-        }
     }
 }

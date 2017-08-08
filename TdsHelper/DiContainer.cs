@@ -6,12 +6,13 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using TdsHelper.Models;
+using TdsHelper.Services;
 
 namespace TdsHelper
 {
     class DiContainer: IServiceProvider
     {
-        private readonly IServiceCollection _serviceCollection = new ServiceCollection();
+        private readonly IServiceCollection _services = new ServiceCollection();
         private IServiceProvider _serviceProvider;
         private static DiContainer _container;
 
@@ -19,19 +20,18 @@ namespace TdsHelper
         {
             ConfigureServices();
 
-            _serviceProvider = _serviceCollection.BuildServiceProvider();
+            _serviceProvider = _services.BuildServiceProvider();
         }
 
         private void ConfigureServices()
         {
-            _serviceCollection.AddOptions();
-            _serviceCollection.AddSingleton<ControllerCollection>();
-            _serviceCollection.AddSingleton<ControllerFactory>();
-            _serviceCollection.AddSingleton<PostgresTypeMapper>();
-            _serviceCollection.Configure<MssqlConnectOptions>(Application.Configuration.GetSection("mssql"));
-            _serviceCollection.AddTransient<Application>();
-//            _serviceCollection.AddTransient<IDbConnection, MyDbConnection>();
-            _serviceCollection.AddTransient<IDbConnection>((provider) =>
+            _services.AddOptions();
+            _services.AddSingleton<ControllerCollection>();
+            _services.AddSingleton<ControllerFactory>();
+            _services.AddSingleton<PostgresTypeMapper>();
+            _services.Configure<MssqlConnectOptions>(Application.Configuration.GetSection("mssql"));
+            _services.AddTransient<Application>();
+            _services.AddTransient<IDbConnection>((provider) =>
             {
                 var connectOptions = Provider.GetService<IOptions<MssqlConnectOptions>>();
                 var connectionString = $"server={connectOptions.Value.Server};" +
@@ -40,6 +40,7 @@ namespace TdsHelper
                                        $"password={connectOptions.Value.Password};";
                 return new SqlConnection(connectionString);
             });
+            _services.AddSingleton<DbService>();
         }
 
         public object GetService(Type serviceType)
@@ -61,8 +62,8 @@ namespace TdsHelper
 
         public static void AddSingleton<T>(T service) where T : class
         {
-            _container._serviceCollection.AddSingleton(service);
-            _container._serviceProvider = _container._serviceCollection.BuildServiceProvider();
+            _container._services.AddSingleton(service);
+            _container._serviceProvider = _container._services.BuildServiceProvider();
         }
     }
 }

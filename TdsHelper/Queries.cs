@@ -49,5 +49,14 @@ namespace TdsHelper
 	                                                    DOMAIN_SCHEMA DOMAINSCHEMA,
 	                                                    DOMAIN_NAME DOMAINNAME
                                                     from INFORMATION_SCHEMA.COLUMNS where TABLE_NAME = @tablename";
+
+        public const string TableSchema = @"select 
+	                                            table_catalog tablecatalog, 
+	                                            table_schema tableschema, 
+	                                            table_name tablename
+                                            from 
+	                                            information_schema.tables 
+                                            where 
+	                                            table_name = @tablename";
     }
 }

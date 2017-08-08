@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using TdsHelper.Abstractions;
 using TdsHelper.Models;
 using TdsHelper.TypeControllers;
 
@@ -30,7 +31,7 @@ namespace TdsHelper
         private void LoadControllers()
         {
             var controllers = Assembly.GetEntryAssembly().GetTypes()
-                .Where(t => TypeExtensions.GetInterfaces(t).Contains(typeof(IController)));
+                .Where(t => t.GetInterfaces().Contains(typeof(IController)));
 
             _controllers.AddRange(controllers);
         }
