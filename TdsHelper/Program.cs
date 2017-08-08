@@ -1,21 +1,59 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
+using System.IO;
+using System.Linq;
+using Microsoft.Extensions.Configuration;
 
 namespace TdsHelper
 {
     class Program
     {
-        static void Main(string[] args)
+        public static IConfigurationRoot Configuration { get; set; }
+
+        public static void Main(string[] args = null)
         {
-            Console.WriteLine("Hello World!");
-            Console.WriteLine("Show schema for table1");
-            ShowSchema("table1");
+            ApplicationRun(args);
+        }
 
-            
+        private static void ApplicationRun(string[] args)
+        {
+            Application.Init(args);
+            var application = DiContainer.Resolve<Application>();
+            application.Run();
+        }
 
-            Console.WriteLine("Press any key to exit.");
-            Console.ReadKey();
+        public static Dictionary<string, string> GetSwitchMappings(IReadOnlyDictionary<string, string> configurationStrings)
+        {
+            return configurationStrings.Select(item =>
+                    new KeyValuePair<string, string>(
+                        "-" + item.Key.Substring(item.Key.LastIndexOf(':') + 1),
+                        item.Key))
+                .ToDictionary(
+                    item => item.Key, item => item.Value);
+        }
+
+        private static void ConfigurationTest(string[] args)
+        {
+            var dict = new Dictionary<string, string>
+            {
+                {"Profile:MachineName", "Rick"},
+                {"App:MainWindow:Left", "11"}
+            };
+
+            var builder = new ConfigurationBuilder().SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile("appsettings.json");
+            builder.AddInMemoryCollection(dict)
+                .AddCommandLine(args, GetSwitchMappings(dict));
+            Configuration = builder.Build();
+            Console.WriteLine($"Hello {Configuration["Profile:MachineName"]}");
+
+            // Set the default value to 80
+            var left = Configuration.GetValue<int>("App:MainWindow:Left", 80);
+            Console.WriteLine($"Left {left}");
+            Console.WriteLine($"ConnectionString {Configuration["ConnectionStrings:DefaultConnection"]}");
+            Console.ReadLine();
         }
 
         private static void ShowSchema(string tableName)

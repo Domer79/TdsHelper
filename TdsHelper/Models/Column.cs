@@ -1,13 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace TdsHelper
+﻿namespace TdsHelper.Models
 {
-    class ColumnSchema
+    class Column
     {
         public string TableCatalog { get; set; }
-        public string TableSchame { get; set; }
+        public string TableSchema { get; set; }
         public string TableName { get; set; }
         public string ColumnName { get; set; }
         public int OrdinalPosition { get; set; }
@@ -23,5 +19,11 @@ namespace TdsHelper
         public object CharacterSetCatalog { get; set; }
         public object CharacterSetSchema { get; set; }
         public string CharacterSetName { get; set; }
+        public string CollationCatalog { get; set; }
+        public string CollectionSchema { get; set; }
+        public string CollationName { get; set; }
+        public string DomainCatalog { get; set; }
+        public string DomainSchema { get; set; }
+        public string DomainName { get; set; }
     }
 }
