@@ -3,16 +3,23 @@ using System.Collections.Generic;
 using System.Text;
 using Microsoft.Extensions.Options;
 using TdsHelper.Models;
+using TdsHelper.Services;
 
 namespace TdsHelper
 {
     static class StringBuilderExtensions
     {
         private static readonly PostgresTypeMapper TypeMapper = DiContainer.Resolve<PostgresTypeMapper>();
-        private static readonly MssqlConnectOptions ConnectOptions = DiContainer.Resolve<IOptions<MssqlConnectOptions>>().Value;
+        private static readonly MssqlConnectOptions MsConnectOptions = DiContainer.Resolve<IOptions<MssqlConnectOptions>>().Value;
+        private static readonly PostgresOptions PgOptions = DiContainer.Resolve<IOptions<PostgresOptions>>().Value;
+        private static readonly PgDbService PgDbService = DiContainer.Resolve<PgDbService>();
 
-        public static StringBuilder CreateServerForDb(this StringBuilder builder)
+        public static StringBuilder CreateServerForDb(this StringBuilder builder, Table table)
         {
+            var serverExist = PgDbService.CheckServerExist($"{PgOptions.MssqlServerAlias}_{MsConnectOptions.Database}_server");
+            if (!serverExist)
+
+
             return builder;
         }
 
@@ -36,7 +43,7 @@ namespace TdsHelper
             }
 
             builder.AppendLine(")");
-            builder.AppendLine($"server {ConnectOptions.Server}");
+            builder.AppendLine($"server {MsConnectOptions.Server}");
             builder.AppendLine(
                 $"options (schema_name '{table.TableSchema}', table_name '{table.TableName}', row_estimate_method 'showplan_all')");
 

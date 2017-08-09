@@ -5,6 +5,7 @@ using System.IO;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using Npgsql;
 using TdsHelper.Models;
 using TdsHelper.Services;
 
@@ -26,11 +27,12 @@ namespace TdsHelper
         private void ConfigureServices()
         {
             _services.AddOptions();
+            _services.Configure<MssqlConnectOptions>(Application.Configuration.GetSection("mssql"));
+            _services.Configure<PostgresOptions>(Application.Configuration.GetSection("postgres"));
+
             _services.AddSingleton<ControllerCollection>();
             _services.AddSingleton<ControllerFactory>();
             _services.AddSingleton<PostgresTypeMapper>();
-            _services.Configure<MssqlConnectOptions>(Application.Configuration.GetSection("mssql"));
-            _services.AddTransient<Application>();
             _services.AddTransient<IDbConnection>((provider) =>
             {
                 var connectOptions = Provider.GetService<IOptions<MssqlConnectOptions>>();
@@ -40,7 +42,18 @@ namespace TdsHelper
                                        $"password={connectOptions.Value.Password};";
                 return new SqlConnection(connectionString);
             });
-            _services.AddSingleton<DbService>();
+            _services.AddTransient((provider) =>
+            {
+                var connectOptions = Provider.GetService<IOptions<PostgresOptions>>().Value.ConnectOptions;
+                var connectionString = $"server={connectOptions.Server};" +
+                                       $"database={connectOptions.Database};" +
+                                       $"userid={connectOptions.UserId};" +
+                                       $"password={connectOptions.Password};";
+                return new NpgsqlConnection(connectionString);
+            });
+            _services.AddSingleton<MssqlDbService>();
+            _services.AddSingleton<PgDbService>();
+            _services.AddSingleton<DbConnectionService>();
         }
 
         public object GetService(Type serviceType)
@@ -60,9 +73,20 @@ namespace TdsHelper
 
         public static IServiceProvider Provider => _container;
 
-        public static void AddSingleton<T>(T service) where T : class
+        internal static void AddSingleton<T>(T service) where T : class
         {
             _container._services.AddSingleton(service);
+            _container._serviceProvider = _container._services.BuildServiceProvider();
+        }
+
+        internal static void AddTransient<T>() where T : class
+        {
+            AddTransient(typeof(T));
+        }
+
+        internal static void AddTransient(Type serviceType)
+        {
+            _container._services.AddTransient(serviceType);
             _container._serviceProvider = _container._services.BuildServiceProvider();
         }
     }

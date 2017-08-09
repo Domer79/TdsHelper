@@ -1,6 +1,6 @@
 ﻿namespace TdsHelper.Models
 {
-    class Column
+    public class Column
     {
         public string TableCatalog { get; set; }
         public string TableSchema { get; set; }

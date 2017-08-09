@@ -6,25 +6,7 @@ namespace TdsHelper
 {
     class Queries
     {
-        public const string TableSimpleSchemaQuery = @"select
-                            TABLE_SCHEMA, 
-                            ORDINAL_POSITION, 
-                            COLUMN_NAME, 
-                            DATA_TYPE, 
-                            case DATA_TYPE
-                                when ''varchar'' then COLUMN_NAME +'' varchar('' + cast(CHARACTER_MAXIMUM_LENGTH as nvarchar(10)) + ''),''
-
-                            when ''nvarchar'' then COLUMN_NAME +'' varchar('' + cast(CHARACTER_MAXIMUM_LENGTH as nvarchar(10)) + ''),''
-
-                            when ''uniqueidentifier'' then COLUMN_NAME +'' uuid,''
-                            else COLUMN_NAME + '' '' + DATA_TYPE + '',''
-
-                            end dataType,
-                                CHARACTER_MAXIMUM_LENGTH
-                            from
-                                INFORMATION_SCHEMA.COLUMNS where TABLE_NAME = @table_name order by ordinal_position";
-
-        public const string TableFullSchemaQuery = @"select
+        public const string MsTableFullSchemaQuery = @"select
 	                                                    TABLE_CATALOG TABLECATALOG,                
 	                                                    TABLE_SCHEMA TABLESCHEMA,
 	                                                    TABLE_NAME TABLENAME,
@@ -50,7 +32,7 @@ namespace TdsHelper
 	                                                    DOMAIN_NAME DOMAINNAME
                                                     from INFORMATION_SCHEMA.COLUMNS where TABLE_NAME = @tablename";
 
-        public const string TableSchema = @"select 
+        public const string MsTableSchema = @"select 
 	                                            table_catalog tablecatalog, 
 	                                            table_schema tableschema, 
 	                                            table_name tablename
@@ -58,5 +40,7 @@ namespace TdsHelper
 	                                            information_schema.tables 
                                             where 
 	                                            table_name = @tablename";
+
+        public const string PgCheckForeignServer = @"select cast(1 as boolean) from information_schema.foreign_servers where foreign_server_name = :serverName union all select false limit 1";
     }
 }

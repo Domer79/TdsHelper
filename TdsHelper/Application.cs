@@ -4,55 +4,56 @@ using System.Data;
 using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using Dapper;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
+using TdsHelper.Abstractions;
+using TdsHelper.Extensions;
 using TdsHelper.Models;
 using TdsHelper.Services;
 
 namespace TdsHelper
 {
-    class Application
+    public class Application
     {
-        private readonly MssqlConnectOptions _mssqlConnectOptions;
-        private readonly PostgresTypeMapper _typeMapper;
-        private readonly DbService _dbService;
-
-        public Application(IOptions<MssqlConnectOptions> mssqlConnectOptions, PostgresTypeMapper typeMapper, DbService dbService)
+        public void Run<TModule>(params object[] args) where TModule: class, IModule
         {
-            _mssqlConnectOptions = mssqlConnectOptions.Value;
-            _typeMapper = typeMapper;
-            _dbService = dbService;
+            DiContainer.Resolve<TModule>().Act(args);
         }
 
-        public void Run()
+        public Application Init(string[] args)
         {
-            var table = _dbService.GetTable(_mssqlConnectOptions.Table);
-            table.Columns = _dbService.GetTableColumns(_mssqlConnectOptions.Table);
+            var configurationBuilder = new ConfigurationBuilder();
+            configurationBuilder.SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile("appsettings.json");
 
-            var sb = new StringBuilder().CreateServerForDb().CreateTableScript(table);
-            var script = sb.ToString();
-        }
-
-        public static void Init(string[] args)
-        {
-            Configuration = new ConfigurationBuilder().SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile("appsettings.json")
-                .AddCommandLine(args, new Dictionary<string, string>()
-                {
-                    { "-server", "mssql:server"},
-                    { "-database", "mssql:database"},
-                    { "-userid", "mssql:userid" },
-                    { "-password", "mssql:password"},
-                    { "-table", "mssql:table" }
-                }).Build();
+            foreach (var builderFunc in ConfigurationBuilderActions)
+            {
+                configurationBuilder.AddCustomBuilder(builderFunc);
+            }
+            Configuration = configurationBuilder.Build();
 
             DiContainer.Init();
+
+            FindAndRegisterModules();
+
+            return this;
+        }
+
+        private void FindAndRegisterModules()
+        {
+            var moduleTypes = Assembly.GetEntryAssembly().GetTypes()
+                .Where(t => t.GetInterfaces().Contains(typeof(IModule)));
+            foreach (var moduleType in moduleTypes)
+            {
+                DiContainer.AddTransient(moduleType);
+            }
         }
 
         public static IConfigurationRoot Configuration { get; private set; }
 
-
+        public static List<Func<IConfigurationBuilder, IConfigurationBuilder>> ConfigurationBuilderActions { get; } = new List<Func<IConfigurationBuilder, IConfigurationBuilder>>();
     }
 }

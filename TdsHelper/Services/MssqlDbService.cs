@@ -9,11 +9,11 @@ using TdsHelper.Models;
 
 namespace TdsHelper.Services
 {
-    class DbService
+    public class MssqlDbService
     {
         private readonly MssqlConnectOptions _options;
 
-        public DbService(IOptions<MssqlConnectOptions> options)
+        public MssqlDbService(IOptions<MssqlConnectOptions> options)
         {
             _options = options.Value;
         }
@@ -22,7 +22,7 @@ namespace TdsHelper.Services
         {
             using (var conn = DiContainer.Resolve<IDbConnection>())
             {
-                return conn.Query<Table>(Queries.TableSchema, new {tablename = tableName}).First();
+                return conn.Query<Table>(Queries.MsTableSchema, new {tablename = tableName}).First();
             }
         }
 
@@ -30,7 +30,7 @@ namespace TdsHelper.Services
         {
             using (IDbConnection conn = DiContainer.Resolve<IDbConnection>())
             {
-                var columns = conn.Query<Column>(Queries.TableFullSchemaQuery, new {tablename = _options.Table})
+                var columns = conn.Query<Column>(Queries.MsTableFullSchemaQuery, new {tablename = _options.Table})
                     .ToArray();
 
                 return columns;
