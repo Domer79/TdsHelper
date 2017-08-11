@@ -1,4 +1,6 @@
-﻿namespace TdsHelper.Models
+﻿using System.Text.RegularExpressions;
+
+namespace TdsHelper.Models
 {
     public class PostgresConnectOptions
     {
@@ -10,6 +12,11 @@
         public override string ToString()
         {
             return $"server={Server};database={Database};userid={UserId};password={Password};";
+        }
+
+        public bool ServerAddressIsIp()
+        {
+            return Regex.Match(Server, @"^\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3}$").Success;
         }
     }
 }

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Dapper;
@@ -11,27 +10,34 @@ namespace TdsHelper.Services
 {
     public class PgDbService
     {
-        private readonly PostgresConnectOptions _connectOptions;
+        private readonly PostgresOptions _postgresOptions;
 
         public PgDbService(IOptions<PostgresOptions> postgresOptions)
         {
-            _connectOptions = postgresOptions.Value.ConnectOptions;
+            _postgresOptions = postgresOptions.Value;
         }
 
         public bool CheckServerExist(string serverName)
         {
-            using (var conn = new NpgsqlConnection(_connectOptions.ToString()))
+            using (var conn = new NpgsqlConnection(_postgresOptions.ConnectOptions.ToString()))
             {
                 return conn.Query<bool>(Queries.PgCheckForeignServer, new {serverName}).Single();
             }
         }
 
-        public bool CreateForeignServer()
+        public bool UserIsMapped(string userName, string serverName)
         {
-            using (var conn = new NpgsqlConnection(_connectOptions.ToString()))
+            using (var conn = new NpgsqlConnection(_postgresOptions.ConnectOptions.ToString()))
             {
-                conn.Execute(
-                    $"create server {serverName} FOREIGN DATA WRAPPER tds_fdw options(servername '172.23.2.65', database 'testdb2', tds_version '7.1')");
+                return conn.Query<bool>(Queries.PgCheckUserMapping, new {userName = userName.ToUpper(), serverName}).Single();
+            }
+        }
+
+        public void ExecuteScript(string script)
+        {
+            using (var conn = new NpgsqlConnection(_postgresOptions.ConnectOptions.ToString()))
+            {
+                conn.Execute(script);
             }
         }
     }

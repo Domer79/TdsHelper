@@ -42,5 +42,7 @@ namespace TdsHelper
 	                                            table_name = @tablename";
 
         public const string PgCheckForeignServer = @"select cast(1 as boolean) from information_schema.foreign_servers where foreign_server_name = :serverName union all select false limit 1";
+
+        public const string PgCheckUserMapping = @"select cast(1 as boolean) from information_schema.user_mappings where authorization_identifier = :userName and foreign_server_name = :serverName union all select false limit 1";
     }
 }

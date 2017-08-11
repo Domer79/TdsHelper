@@ -29,6 +29,7 @@ namespace TdsHelper
             _services.AddOptions();
             _services.Configure<MssqlConnectOptions>(Application.Configuration.GetSection("mssql"));
             _services.Configure<PostgresOptions>(Application.Configuration.GetSection("postgres"));
+            _services.Configure<UserMapOptions>(Application.Configuration.GetSection("usermap"));
 
             _services.AddSingleton<ControllerCollection>();
             _services.AddSingleton<ControllerFactory>();
