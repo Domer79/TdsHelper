@@ -32,3 +32,4 @@
   2. mapfor
     - username - пользователь входа MSSQL
     - password - пароль
+3. scriptshowonly - только вывод скрипта в консоли приложения
