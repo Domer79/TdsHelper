@@ -13,6 +13,7 @@
 
 Файл конфигурации разделен на несколько категорий
 1. mssql
+- mssqlserveralias - наименование сервера mssql при его регистрации на сервере PostgreSql
 - server - имя сервера базы данных mssql
 - database - наименование базы данных 
 - userid - идентификатор пользователя
@@ -21,4 +22,13 @@
 - table - таблица, для которой будет создаваться внешняя таблица
 2. postgres
 - connectoptions
---server
+  1. server
+  2. database
+  3. userid
+  4. password    
+  (Эти параметры имеют то же назначение, что и для mssql)
+- usermap
+  1. pgAuthId - пользователь или группа БД PostgreSql, от имени которой будет осуществляться подключение к БД MSSQL
+  2. mapfor
+    - username - пользователь входа MSSQL
+    - password - пароль
