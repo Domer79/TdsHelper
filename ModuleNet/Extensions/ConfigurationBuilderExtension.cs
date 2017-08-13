@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using Microsoft.Extensions.Configuration;
 
-namespace TdsHelper.Extensions
+namespace ModuleNet.Extensions
 {
     public static class ConfigurationBuilderExtension
     {

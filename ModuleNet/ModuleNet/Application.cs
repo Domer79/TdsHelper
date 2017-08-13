@@ -1,23 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data;
-using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text;
-using Dapper;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Options;
-using TdsHelper.Abstractions;
-using TdsHelper.Extensions;
-using TdsHelper.Models;
-using TdsHelper.Services;
+using ModuleNet.Abstractions;
+using ModuleNet.Extensions;
 
-namespace TdsHelper
+namespace ModuleNet.ModuleNet
 {
     public class Application
     {
+        private Type _startupType;
+
         public void Run<TModule>(params object[] args) where TModule: class, IModule
         {
             DiContainer.Resolve<TModule>().Act(args);
@@ -35,17 +30,22 @@ namespace TdsHelper
             }
             Configuration = configurationBuilder.Build();
 
-            DiContainer.Init();
+            DiContainer.Init(_startupType != null? (BaseStartup)Activator.CreateInstance(_startupType) : null);
 
             FindAndRegisterModules();
 
             return this;
         }
 
+        public Application UseStartup<T>() where T: BaseStartup
+        {
+            _startupType = typeof(T);
+            return this;
+        }
+
         private void FindAndRegisterModules()
         {
-            var moduleTypes = Assembly.GetEntryAssembly().GetTypes()
-                .Where(t => t.GetInterfaces().Contains(typeof(IModule)));
+            var moduleTypes = Enumerable.Where<Type>(InternalService.Instance.GetAllTypes(), t => TypeExtensions.GetInterfaces(t).Contains(typeof(IModule)));
             foreach (var moduleType in moduleTypes)
             {
                 DiContainer.AddTransient(moduleType);

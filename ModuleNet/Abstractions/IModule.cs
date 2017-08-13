@@ -1,4 +1,4 @@
-﻿namespace TdsHelper.Abstractions
+﻿namespace ModuleNet.Abstractions
 {
     public interface IModule
     {

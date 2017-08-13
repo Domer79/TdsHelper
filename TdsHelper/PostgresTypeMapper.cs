@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using ModuleNet.ModuleNet.Attributes;
 using TdsHelper.Models;
 
 namespace TdsHelper
 {
-    class PostgresTypeMapper
+    [Injectable]
+    public class PostgresTypeMapper
     {
         private readonly ControllerFactory _controllerFactory;
 

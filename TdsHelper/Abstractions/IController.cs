@@ -1,6 +1,6 @@
 ﻿namespace TdsHelper.Abstractions
 {
-    internal interface IController
+    public interface IController
     {
         string ToPostgresTypeString();
     }

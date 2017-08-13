@@ -1,11 +1,13 @@
 ﻿using System.Text;
+using ModuleNet.ModuleNet.Attributes;
 using TdsHelper.Abstractions;
 using TdsHelper.Models;
 using TdsHelper.TypeControllers;
 
 namespace TdsHelper
 {
-    class ControllerFactory
+    [Injectable]
+    public class ControllerFactory
     {
         private readonly ControllerCollection _controllers;
 

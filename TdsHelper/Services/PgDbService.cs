@@ -3,11 +3,13 @@ using System.Linq;
 using System.Text;
 using Dapper;
 using Microsoft.Extensions.Options;
+using ModuleNet.ModuleNet.Attributes;
 using Npgsql;
 using TdsHelper.Models;
 
 namespace TdsHelper.Services
 {
+    [Injectable]
     public class PgDbService
     {
         private readonly PostgresOptions _postgresOptions;

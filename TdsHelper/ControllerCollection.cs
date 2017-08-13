@@ -3,13 +3,15 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using ModuleNet.ModuleNet.Attributes;
 using TdsHelper.Abstractions;
 using TdsHelper.Models;
 using TdsHelper.TypeControllers;
 
 namespace TdsHelper
 {
-    class ControllerCollection: IEnumerable<Type>
+    [Injectable]
+    public class ControllerCollection: IEnumerable<Type>
     {
         private readonly List<Type> _controllers = new List<Type>();
 
