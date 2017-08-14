@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Text;
 using Microsoft.Extensions.Options;
 using ModuleNet.ModuleNet.Attributes;
@@ -15,14 +16,16 @@ namespace TdsHelper
         private readonly MssqlConnectOptions _msConnectOptions;
         private readonly PostgresOptions _pgOptions;
         private readonly PgDbService _pgDbService;
+        private readonly TableOptions _tableOptions;
 
         public StringBuilderService(PostgresTypeMapper typeMapper, IOptions<MssqlConnectOptions> msConnectOptions,
-            IOptions<PostgresOptions> pgOptions, PgDbService pgDbService)
+            IOptions<PostgresOptions> pgOptions, PgDbService pgDbService, IOptions<TableOptions> tableOptions)
         {
             _typeMapper = typeMapper;
             _msConnectOptions = msConnectOptions.Value;
             _pgOptions = pgOptions.Value;
             _pgDbService = pgDbService;
+            _tableOptions = tableOptions.Value;
         }
 
         public StringBuilderService CreateTdsExtension(StringBuilder builder)
@@ -87,7 +90,7 @@ namespace TdsHelper
 
         public StringBuilderService CreateTableScript(StringBuilder builder, Table table)
         {
-            var columns = table.Columns;
+            var columns = table.Columns.Where(ColumnFilter).ToArray();
             builder
                 .AppendLine($"create foreign table if not exists {_msConnectOptions.AliasAndServer}_public.{table.TableName}")
                 .AppendLine("(");
@@ -112,6 +115,18 @@ namespace TdsHelper
                     $"options (schema_name '{table.TableSchema}', table_name '{table.TableName}', row_estimate_method 'showplan_all');");
 
             return this;
+        }
+
+        private bool ColumnFilter(Column column)
+        {
+            if (_tableOptions.ColumnsBuildPolicy == ColumnsBuildPolicy.AllColumnsExceptExcluded)
+                return !_tableOptions.ExcludedColumns.Contains(column.ColumnName);
+
+            if (_tableOptions.ColumnsBuildPolicy == ColumnsBuildPolicy.OnlySpecifiedColumns)
+                return _tableOptions.Columns.Contains(column.ColumnName);
+
+            //if (_tableOptions.ColumnsBuildPolicy == ColumnsBuildPolicy.All)
+            return true;
         }
     }
 }

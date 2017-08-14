@@ -31,7 +31,7 @@ namespace ModuleNet.ModuleNet
 
         private void LoadService()
         {
-            var serviceTypeInfos = Enumerable.Where<Type>(InternalService.Instance.GetAllTypes(), t => IntrospectionExtensions.GetTypeInfo(t).IsDefined(typeof(InjectableAttribute)))
+            var serviceTypeInfos = InternalService.Instance.GetAllTypes().Where<Type>(t => t.GetTypeInfo().IsDefined(typeof(InjectableAttribute)))
                 .Select(t =>
                 {
                     var injectableAttribute = t.GetTypeInfo().GetCustomAttribute<InjectableAttribute>();

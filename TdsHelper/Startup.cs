@@ -14,6 +14,7 @@ namespace TdsHelper
             services.Configure<MssqlConnectOptions>(Application.Configuration.GetSection("mssql"));
             services.Configure<PostgresOptions>(Application.Configuration.GetSection("postgres"));
             services.Configure<UserMapOptions>(Application.Configuration.GetSection("usermap"));
+            services.Configure<TableOptions>(Application.Configuration.GetSection("table"));
         }
     }
 }

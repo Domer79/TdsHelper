@@ -8,29 +8,29 @@ using ModuleNet.ModuleNet;
 using TdsHelper.Abstractions;
 using TdsHelper.Models;
 using TdsHelper.Services;
+using System.IO;
 
 namespace TdsHelper.Modules
 {
     public class GenerateScriptModule: IModule
     {
-        private readonly MssqlConnectOptions _mssqlConnectOptions;
         private readonly MssqlDbService _mssqlDbService;
         private readonly PgDbService _pgDbService;
         private readonly StringBuilderService _stringBuilderService;
+        private readonly TableOptions _tableOptions;
 
-        public GenerateScriptModule(IOptions<MssqlConnectOptions> mssqlConnectOptions, 
-            MssqlDbService mssqlDbService, PgDbService pgDbService, StringBuilderService stringBuilderService)
+        public GenerateScriptModule(MssqlDbService mssqlDbService, PgDbService pgDbService, StringBuilderService stringBuilderService, IOptions<TableOptions> tableOptions)
         {
-            _mssqlConnectOptions = mssqlConnectOptions.Value;
             _mssqlDbService = mssqlDbService;
             _pgDbService = pgDbService;
             _stringBuilderService = stringBuilderService;
+            _tableOptions = tableOptions.Value;
         }
 
         public void Act(params object[] args)
         {
-            var table = _mssqlDbService.GetTable(_mssqlConnectOptions.Table);
-            table.Columns = _mssqlDbService.GetTableColumns(_mssqlConnectOptions.Table);
+            var table = _mssqlDbService.GetTable(_tableOptions.Name);
+            table.Columns = _mssqlDbService.GetTableColumns(_tableOptions.Name);
 
             var sb = new StringBuilder();
             _stringBuilderService.CreateTdsExtension(sb)
@@ -42,14 +42,20 @@ namespace TdsHelper.Modules
 
             var script = sb.ToString();
 
+            if (Application.Configuration.GetValue<string>("scriptsavepath") != null)
+            {
+                SaveToFile(Application.Configuration.GetValue<string>("scriptsavepath"), script);
+            }
+
             if (Application.Configuration.GetValue<bool>("scriptshowonly"))
             {
                 Console.WriteLine(script);
-                Console.WriteLine("Execute script?[Y]");
+                Console.Write("Execute script?[Y]");
                 var keyInfo = Console.ReadKey();
                 if (keyInfo.Key == ConsoleKey.Y)
                 {
                     _pgDbService.ExecuteScript(script);
+                    Console.WriteLine();
                     Console.WriteLine("Script successfull executed.");
                 }
 
@@ -58,6 +64,15 @@ namespace TdsHelper.Modules
 
             _pgDbService.ExecuteScript(script);
             Console.WriteLine("Script successfull executed.");
+        }
+
+        private static void SaveToFile(string path, string content)
+        {
+            var directory = Path.GetDirectoryName(path);
+            if (!Directory.Exists(directory))
+                Directory.CreateDirectory(directory);
+
+            File.WriteAllText(path, content);
         }
     }
 }

@@ -14,10 +14,12 @@ namespace TdsHelper.Services
     [Injectable]
     public class MssqlDbService
     {
+        private readonly TableOptions _tableOptions;
         private readonly MssqlConnectOptions _options;
 
-        public MssqlDbService(IOptions<MssqlConnectOptions> options)
+        public MssqlDbService(IOptions<MssqlConnectOptions> options, IOptions<TableOptions> tableOptions)
         {
+            _tableOptions = tableOptions.Value;
             _options = options.Value;
         }
 
@@ -33,7 +35,7 @@ namespace TdsHelper.Services
         {
             using (IDbConnection conn = new SqlConnection(_options.ToString()))
             {
-                var columns = conn.Query<Column>(Queries.MsTableFullSchemaQuery, new {tablename = _options.Table})
+                var columns = conn.Query<Column>(Queries.MsTableFullSchemaQuery, new {tablename = _tableOptions.Name})
                     .ToArray();
 
                 return columns;

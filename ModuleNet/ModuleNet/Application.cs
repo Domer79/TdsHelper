@@ -45,7 +45,7 @@ namespace ModuleNet.ModuleNet
 
         private void FindAndRegisterModules()
         {
-            var moduleTypes = Enumerable.Where<Type>(InternalService.Instance.GetAllTypes(), t => TypeExtensions.GetInterfaces(t).Contains(typeof(IModule)));
+            var moduleTypes = InternalService.Instance.GetAllTypes().Where(t => t.GetInterfaces().Contains(typeof(IModule)));
             foreach (var moduleType in moduleTypes)
             {
                 DiContainer.AddTransient(moduleType);
