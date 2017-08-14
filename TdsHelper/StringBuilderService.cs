@@ -37,7 +37,7 @@ namespace TdsHelper
 
         public StringBuilderService CreateServerForDb(StringBuilder builder, Table table)
         {
-            var serverExist = _pgDbService.CheckServerExist(_msConnectOptions.AliasAndServer);
+            var serverExist = _pgDbService.CheckServerExist(_msConnectOptions.AliasAndServer.ToLower());
             if (serverExist)
             {
                 Console.WriteLine($"Server {_msConnectOptions.AliasAndServer} already exists. Operation will be skipped.");

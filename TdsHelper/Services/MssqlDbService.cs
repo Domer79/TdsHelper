@@ -14,11 +14,13 @@ namespace TdsHelper.Services
     [Injectable]
     public class MssqlDbService
     {
+        private readonly ErrorLogger _errorLogger;
         private readonly TableOptions _tableOptions;
         private readonly MssqlConnectOptions _options;
 
-        public MssqlDbService(IOptions<MssqlConnectOptions> options, IOptions<TableOptions> tableOptions)
+        public MssqlDbService(IOptions<MssqlConnectOptions> options, IOptions<TableOptions> tableOptions, ErrorLogger errorLogger)
         {
+            _errorLogger = errorLogger;
             _tableOptions = tableOptions.Value;
             _options = options.Value;
         }
@@ -27,7 +29,16 @@ namespace TdsHelper.Services
         {
             using (var conn = new SqlConnection(_options.ToString()))
             {
-                return conn.Query<Table>(Queries.MsTableSchema, new {tablename = tableName}).First();
+                try
+                {
+                    return conn.Query<Table>(Queries.MsTableSchema, new {tablename = tableName}).First();
+
+                }
+                catch (Exception e)
+                {
+                    _errorLogger.SaveErrorToLog(e.Message, e.StackTrace);
+                    throw;
+                }
             }
         }
 
@@ -35,10 +46,19 @@ namespace TdsHelper.Services
         {
             using (IDbConnection conn = new SqlConnection(_options.ToString()))
             {
-                var columns = conn.Query<Column>(Queries.MsTableFullSchemaQuery, new {tablename = _tableOptions.Name})
-                    .ToArray();
+                try
+                {
+                    var columns = conn.Query<Column>(Queries.MsTableFullSchemaQuery, new {tablename = _tableOptions.Name})
+                        .ToArray();
 
-                return columns;
+                    return columns;
+
+                }
+                catch (Exception e)
+                {
+                    _errorLogger.SaveErrorToLog(e.Message, e.StackTrace);
+                    throw;
+                }
             }
         }
     }

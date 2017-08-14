@@ -8,7 +8,7 @@
         public string UserId { get; set; }
         public string Password { get; set; }
 
-        public string AliasAndServer => $"{MssqlServerAlias}_{Database}_server";
+        public string AliasAndServer => $"{MssqlServerAlias}_{Database}_server".ToLower();
 
         public override string ToString()
         {
