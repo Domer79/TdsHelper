@@ -25,7 +25,8 @@ namespace TdsHelper
                     {"-ms-userid", "mssql:userid"},
                     {"-ms-password", "mssql:password"},
                     {"-ms-table", "table:name"},
-                    {"-ms-col:#", "table:columns:#"}
+                    {"-ms-col:#", "table:columns:#"},
+                    { "-confirm", "confirm" }
                 };
                 for (int i = 0; i < 999; i++)
                 {

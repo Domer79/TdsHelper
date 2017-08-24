@@ -10,7 +10,7 @@ namespace TdsHelper.TypeControllers
 
         public override string ToPostgresTypeString()
         {
-            return $"TIME({Column.DatetimePrecision})";
+            return $"TIME({(Column.DatetimePrecision > 6 ? 6 : Column.DatetimePrecision)})";
         }
     }
 }

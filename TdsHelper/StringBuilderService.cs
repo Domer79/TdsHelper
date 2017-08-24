@@ -92,7 +92,7 @@ namespace TdsHelper
         {
             var columns = table.Columns.Where(ColumnFilter).ToArray();
             builder
-                .AppendLine($"create foreign table if not exists {_msConnectOptions.AliasAndServer}_public.{table.TableName}")
+                .AppendLine($"create foreign table if not exists {_msConnectOptions.AliasAndServer}_public.{table.TableName.ToLower()}")
                 .AppendLine("(");
 
             for (var i = 0; i < columns.Length; i++)

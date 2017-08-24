@@ -51,6 +51,9 @@ namespace TdsHelper.Modules
 
             if (Application.Configuration.GetValue<bool>("scriptshowonly"))
             {
+                if (!Application.Configuration.GetValue<bool>("confirm"))
+                    goto Exit;
+
                 Console.WriteLine(script);
                 Console.Write("Execute script?[Y]");
                 var keyInfo = Console.ReadKey();
@@ -61,6 +64,7 @@ namespace TdsHelper.Modules
                     Console.WriteLine("Script successfull executed.");
                 }
 
+                Exit:
                 return;
             }
 

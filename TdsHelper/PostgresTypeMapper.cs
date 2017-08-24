@@ -18,7 +18,7 @@ namespace TdsHelper
 
         public string ToPostgresColumnString(Column column)
         {
-            return $"{column.ColumnName} {_controllerFactory.GetPostgresDataType(column)}";
+            return $"{column.ColumnName.ToLower()} {_controllerFactory.GetPostgresDataType(column)}";
         }
     }
 }
